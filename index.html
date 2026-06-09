@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VibeAct: Vibration to Actions for Contact-Rich Reactive Robot Dexterity</title>
+
+  <meta name="description" content="VibeAct is a vibration-based system for converting tactile feedback into actionable commands for robots operating in contact-rich environments." />
+  <meta name="keywords" content="VibeAct, vibrotactile sensing, contact-rich manipulation, robot dexterity" />
+  <meta name="robots" content="index, follow" />
+
+  <meta property="og:title" content="VibeAct: Vibration to Actions for Contact-Rich Reactive Robot Dexterity" />
+  <meta property="og:description" content="Low-profile, multi-channel acoustic sensing for continuous slip vector estimation in robotic in-hand manipulation." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://vibeact.github.io/" />
+  <meta property="og:site_name" content="VibeAct" />
+  <meta property="og:image:width" content="300" />
+  <meta property="og:image:height" content="212" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:locale" content="en_US" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <!-- Include MathJax -->
+  <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
+  </script>
+  <script type="text/javascript">
+  window.onload = function() {
+    MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [['$', '$']]
+      }
+    });
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+  };
+  </script>
+  <!-- Academic Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css" />
+
+  <style>
+    /* ── General ─────────────────────────────────────────────── */
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 3.25rem;
+      overscroll-behavior-y: none;
+    }
+
+    body {
+      font-family: "Google Sans", "Segoe UI", Roboto, Arial, sans-serif;
+      background: #fff;
+      color: #333;
+      overscroll-behavior-y: none;
+    }
+
+    .container {
+      width: 80%;
+    }
+
+    /* ── Page progress bar ───────────────────────────────────── */
+    .page-progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: rgba(0,0,0,0.06);
+      z-index: 101;
+      pointer-events: none;
+    }
+    .page-progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: #3273dc;
+      transition: width 0.08s ease-out;
+    }
+
+    /* ── Navbar ──────────────────────────────────────────────── */
+    .navbar {
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(6px);
+      box-shadow: 0 2px 8px rgba(0,0,0,.07);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+    .navbar-item { font-weight: 500; color: #333 !important; transition: color 0.2s ease; }
+    .navbar-item:hover { color: #3273dc !important; }
+    .navbar-item.is-active-section { color: #3273dc !important; }
+    .navbar.navbar-over-video {
+      background: transparent !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      box-shadow: none !important;
+    }
+    .navbar.navbar-over-video .navbar-item { color: rgba(255,255,255,0.9) !important; }
+    .navbar.navbar-over-video .navbar-item:hover { color: #3273dc !important; }
+    .navbar.navbar-over-video .navbar-burger span { background-color: #fff; }
+
+    /* ── Hero ────────────────────────────────────────────────── */
+    .hero-teaser-wrap {
+      position: relative;
+      overflow-x: hidden;
+      min-height: 100vh;
+      background: #000;
+    }
+    .hero-teaser-wrap .teaser-video-bg {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 1800px;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
+    }
+    .hero-teaser-wrap .teaser-overlay {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        transparent 50%,
+        rgba(0,0,0,0.25) 88%,
+        rgba(0,0,0,0.4) 100%
+      );
+      z-index: 1;
+      pointer-events: none;
+    }
+    .hero-teaser-wrap::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        transparent 50%,
+        rgba(0,0,0,0.25) 88%,
+        rgba(0,0,0,0.4) 100%
+      );
+      z-index: 1;
+      pointer-events: none;
+    }
+    .hero-teaser-wrap .hero-body {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      transform: translateY(-50%);
+      z-index: 2;
+      padding: 2.5rem 1.5rem;
+      width: 100%;
+      transition: opacity 0.12s ease-out;
+    }
+    .hero-teaser-wrap .hero-teaser-content {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .hero-teaser-wrap .title.paper-title { color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,0.5); margin-bottom: 0.5rem; }
+    .hero-teaser-wrap .author-list { color: rgba(255,255,255,0.95); text-shadow: 0 1px 4px rgba(0,0,0,0.5); margin-top: 0.6rem; margin-bottom: 0.35rem; }
+    .hero-teaser-wrap .author-list a { color: #b8d4ff; }
+    .hero-teaser-wrap .author-list a:hover { color: #fff; text-decoration: underline; }
+    .hero-teaser-wrap .affiliation-list { color: rgba(255,255,255,0.9); text-shadow: 0 1px 4px rgba(0,0,0,0.5); margin-top: 0.5rem; margin-bottom: 0.2rem; }
+    .hero-teaser-wrap .link-buttons { margin-top: 1.25rem; }
+    .hero-teaser-wrap .link-buttons .button { box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+
+    /* Scroll indicator */
+    .scroll-indicator {
+      position: absolute;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.35rem;
+      color: rgba(255,255,255,0.9);
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity 0.12s ease-out;
+    }
+    .scroll-indicator:hover { color: #fff; }
+    .scroll-indicator-arrow {
+      animation: scroll-bounce 2s ease-in-out infinite;
+    }
+    @keyframes scroll-bounce {
+      0%, 100% { transform: translateY(0); opacity: 1; }
+      50% { transform: translateY(6px); opacity: 0.7; }
+    }
+
+    @media (max-width: 768px) {
+      .hero-teaser-wrap {
+        min-height: 100vh;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+      }
+      .hero-teaser-wrap .teaser-video-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        min-height: 100%;
+        object-fit: cover;
+        object-position: center center;
+        transform: none;
+      }
+      .hero-teaser-wrap .hero-body {
+        position: relative !important;
+        padding: 1.5rem 1rem 4rem;
+        padding-top: calc(3.25rem + 1rem);
+      }
+      .hero-teaser-wrap .title.paper-title { font-size: 1.4rem; }
+      .hero-teaser-wrap .author-list { font-size: 0.85rem; margin-bottom: 0.25rem; }
+      .hero-teaser-wrap .affiliation-list { font-size: 0.78rem; }
+      .hero-teaser-wrap .link-buttons .button { font-size: 0.8rem; padding: 0.4em 0.8em; margin: 0.2rem; }
+    }
+
+    .title.paper-title {
+      font-size: 2.2rem;
+      font-weight: 700;
+      line-height: 1.25;
+      color: #1a1a2e;
+    }
+
+    .author-list { 
+      font-size: 1.05rem; 
+      margin-bottom: 0.5rem; 
+      color: #4a4a4a;
+    }
+    .author-list a { color: #3273dc; text-decoration: none; }
+    .author-list a:hover { text-decoration: underline; }
+
+    .affiliation-list { 
+      font-size: 0.95rem; 
+      color: #555; 
+    }
+
+    /* ── Buttons ─────────────────────────────────────────────── */
+    .link-buttons { margin-top: 1.5rem; }
+    .link-buttons .button {
+      margin: 0.3rem;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    /* ── Section headings ────────────────────────────────────── */
+    .section-heading {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+    .section-divider {
+      width: 60px;
+      height: 4px;
+      background: #3273dc;
+      margin: 0 auto 2rem;
+      border-radius: 2px;
+    }
+
+    /* ── Subsection headings (nested within a section) ───────── */
+    .subsection-heading {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      text-align: left;
+      margin-bottom: 0.4rem;
+    }
+    .subsection-divider {
+      width: 48px;
+      height: 3px;
+      background: #3273dc;
+      margin: 0 0 1.5rem;
+      border-radius: 2px;
+    }
+
+    /* ── Abstract ────────────────────────────────────────────── */
+    .abstract-box {
+      background: #f7f9fc;
+      border-left: 4px solid #3273dc;
+      padding: 1.5rem 2rem;
+      border-radius: 0 8px 8px 0;
+      font-size: 1rem;
+      line-height: 1.75;
+      text-align: justify;
+    }
+
+    /* ── Media containers ────────────────────────────────────── */
+    .media-container {
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,.08);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .media-container:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0,0,0,.12);
+    }
+    .media-container video,
+    .media-container img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Tighter grid layout for smaller figures */
+    .two-col-media {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+    /* Image left (narrower), video right (wider) */
+    .two-col-media.two-col-media--img-narrow-video-wide {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+    }
+    /* Vertically center columns when figure heights differ */
+    .two-col-media.two-col-media--v-center {
+      align-items: center;
+    }
+    .three-col-media {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.2rem;
+      margin: 2rem 0;
+    }
+    @media (max-width: 1024px) {
+      .three-col-media { grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    }
+    @media (max-width: 768px) {
+      .two-col-media,
+      .two-col-media.two-col-media--img-narrow-video-wide { grid-template-columns: 1fr; }
+      .three-col-media { grid-template-columns: 1fr; }
+    }
+
+    /* ── Cards ───────────────────────────────────────────────── */
+    .card.clean {
+      box-shadow: 0 2px 12px rgba(0,0,0,.08);
+      border: none;
+      border-radius: 10px;
+    }
+    .card.clean:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,.12);
+      transition: box-shadow 0.2s ease;
+    }
+
+    .paper-abstract {
+      line-height: 1.75;
+      text-align: justify;
+    }
+    .metric-list li { margin-bottom: 0.75rem; }
+
+    /* ── Keyword pill ────────────────────────────────────────── */
+    .keyword-pill {
+      display: inline-block;
+      background: #eef3ff;
+      color: #3273dc;
+      border: 1px solid #b8cef5;
+      border-radius: 20px;
+      padding: 0.2rem 0.8rem;
+      margin: 0.2rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    /* ── Section alternating backgrounds ────────────────────── */
+    .section.is-light-alt { background: #f7f9fc; }
+    .section.is-white-alt { background: #fff; }
+
+    /* ── Footer ──────────────────────────────────────────────── */
+    .footer { 
+      background: #1a1a2e; 
+      color: rgba(255,255,255,.65); 
+      padding: 2rem 1.5rem; 
+    }
+    .footer a { color: rgba(255,255,255,.8); }
+    .footer a:hover { color: #fff; }
+
+    /* ── Responsive tweaks ───────────────────────────────────── */
+    @media (max-width: 768px) {
+      .title.paper-title { font-size: 1.5rem; }
+      .section-heading { font-size: 1.4rem; }
+    }
+
+    .three-media-layout {
+      display: flex;
+      flex-direction: row;
+      gap: 1.5rem;
+      align-items: stretch;
+      margin: 2rem 0;
+    }
+
+    .left-media {
+      flex: 1;
+    }
+
+    .right-media {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .left-media img,
+    .right-media img {
+      width: 100%;
+      display: block;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.08);
+    }
+
+    .right-media img {
+      flex: 1;
+    }
+
+    @media (max-width: 768px) {
+      .three-media-layout {
+        flex-direction: column;
+      }
+    }
+
+    /* ── Video carousel ──────────────────────────────────────── */
+    .video-carousel {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+    .carousel-viewport {
+      flex: 1;
+      min-width: 0;
+    }
+    .carousel-arrow {
+      flex: 0 0 auto;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: none;
+      background: #3273dc;
+      color: #fff;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.18);
+      transition: background .2s ease, transform .2s ease;
+    }
+    .carousel-arrow:hover { background: #2759b5; transform: scale(1.08); }
+    .carousel-arrow:active { transform: scale(0.96); }
+    .carousel-caption {
+      padding: 0.75rem;
+      background: #fff;
+      text-align: center;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #333;
+    }
+    .carousel-dots {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    .carousel-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: none;
+      background: #cdd8ee;
+      cursor: pointer;
+      padding: 0;
+      transition: background .2s ease, transform .2s ease;
+    }
+    .carousel-dot.is-active { background: #3273dc; transform: scale(1.25); }
+    @media (max-width: 768px) {
+      .carousel-arrow { width: 38px; height: 38px; font-size: 0.95rem; }
+      .video-carousel { gap: 0.5rem; }
+    }
+
+    /* ── Chart card ──────────────────────────────────────────── */
+    .chart-card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.08);
+      padding: 1.5rem 1.5rem 1rem;
+      margin-top: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-progress-bar">
+    <div class="page-progress-bar-fill"></div>
+  </div>
+
+  <nav class="navbar" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+      <a class="navbar-item has-text-weight-semibold" href="#top">VibeAct</a>
+      <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="mainNav">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </a>
+    </div>
+
+    <div id="mainNav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="#overview">Overview</a>
+        <a class="navbar-item" href="#abstract">Abstract</a>
+        <a class="navbar-item" href="#method">Method</a>
+        <a class="navbar-item" href="#estimator">Tactile Estimator</a>
+        <a class="navbar-item" href="#policy">Policy Learning</a>
+        <a class="navbar-item" href="#evaluation">Evaluation</a>
+      </div>
+    </div>
+  </nav>
+
+  <section class="hero hero-teaser-wrap" id="top">
+    <video class="teaser-video-bg" muted playsinline autoplay loop preload="auto">
+      <source src="assets/teaser.mp4" type="video/mp4">
+    </video>
+    <div class="teaser-overlay" aria-hidden="true"></div>
+    <button type="button" class="scroll-indicator" id="scroll-indicator-btn" aria-label="Scroll to content">
+      <span class="scroll-indicator-arrow"><i class="fas fa-chevron-down"></i></span>
+      <span>Scroll</span>
+    </button>
+    <div class="hero-body">
+      <div class="container has-text-centered">
+        <div class="hero-teaser-content">
+          <h1 class="title paper-title">VibeAct: Vibration to Actions for Contact-Rich Reactive Robot Dexterity</h1>
+          <p class="author-list">Anonymous</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="overview" class="section is-white-alt">
+    <div class="container" style="max-width: 900px;">
+      <h2 class="section-heading">System Overview</h2>
+      <div class="section-divider"></div>
+
+      <div class="media-container" style="max-width: 80%; margin: 0 auto;">
+        <img src="assets/system_overview.jpg" alt="VibeAct System Overview">
+      </div>
+
+      <div class="card clean" style="margin-top: 1.5rem;">
+        <div class="card-content content">
+          <p>
+            <strong>VibeAct</strong> connects real vibrotactile sensing to simulation-based policy learning through an explicit intermediate 
+            representation of contact and slip. A tactile estimator infers this representation from microphone signals, 
+            and the policy learns to act on the same representation in simulation.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="abstract" class="section">
+    <div class="container" style="max-width: 900px;">
+      <h2 class="section-heading">Abstract</h2>
+      <div class="section-divider"></div>
+
+      <div class="abstract-box">
+        Dexterous manipulation depends on contact events that are fast, local, and often visually occluded. 
+        Piezoelectric microphones offer a compact and high-bandwidth way to sense these interactions, 
+        but the resulting vibro-acoustic signals are difficult to simulate faithfully enough for end-to-end 
+        sim-to-real policy learning on dexterous robot hands. 
+        We propose <strong>VibeAct</strong>, a framework that bridges real vibrotactile sensing and simulation-based 
+        reinforcement learning through a shared physical representation of contact and slip. 
+        In the real world, we embed piezoelectric microphones into a dexterous robot hand and 
+        collect vibro-acoustic data through teleoperation, then replay the recordings in a calibrated digital 
+        clone to automatically label per-finger contact and slip. 
+        A tactile estimator learns to predict contact and slip from real microphone waveforms, 
+        while manipulation policies are trained in simulation on the same representation computed directly 
+        from simulated contacts. This decoupling lets policies exploit rapid tactile feedback without simulating 
+        raw audio. Across five contact-rich tasks spanning regrasping, in-hand reorientation, and insertion, 
+        VibeAct consistently outperforms a proprioception-and-point-cloud baseline in simulation, 
+        with the largest gains on tasks requiring sustained reactive control, where the continuous 
+        slip-magnitude channel proves the most informative observation. 
+        The learned policies transfer to a physical dexterous hand-arm platform, improving 
+        success rates on deployed tasks.
+      </div>
+    </div>
+  </section>
+
+
+  <section id="contributions" class="section is-light-alt">
+    <div class="container" style="max-width: 900px;">
+      <h2 class="section-heading">Contributions</h2>
+      <div class="section-divider"></div>
+
+      <div class="card clean">
+        <div class="card-content content">
+          <ul style="line-height: 1.8;">
+            <li>A sim-to-real framework for vibrotactile dexterity based on a shared contact-and-slip representation that bridges real vibrotactile sensing and simulation-based policy learning.</li>
+            <li>A digital-clone data labeling pipeline that automatically generates per-finger contact and slip supervision from real-world demonstrations.</li>
+            <li>An empirical study showing that this representation serves as an effective tactile observation for reinforcement learning across contact-rich dexterous manipulation tasks.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="method" class="section is-white-alt">
+    <div class="container" style="max-width: 900px;">
+      <h2 class="section-heading">Method</h2>
+      <div class="section-divider"></div>
+
+      <div class="media-container" style="max-width: 85%; margin: 0 auto;">
+        <img src="assets/architecture.jpg" alt="VibeAct Model Architecture">
+      </div>
+
+      <div class="card clean" style="margin-top: 1.5rem;">
+        <div class="card-content content">
+          <p>
+            <strong>VibeAct</strong> first trains a tactile estimator on real-world data, 
+            which estimates contact and slip from vibro-acoustic signals using four independent per-finger subnetworks. 
+            It then trains reinforcement learning policies entirely in simulation using this representation together with 
+            point-cloud and proprioceptive observations, and deploys the resulting policies directly in the real world.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section id="estimator" class="section is-light-alt">
+    <div class="container" style="max-width: 1100px;">
+      <h2 class="section-heading">Tactile Estimator</h2>
+      <div class="section-divider"></div>
+
+      <div class="card clean" style="margin-top: 1.5rem;">
+        <div class="card-content content">
+          <p>
+            For each finger, the tactile estimator maps raw vibro-acoustic signals to three physically grounded quantities:
+            contact onset, slip presence, and slip magnitude. To train the estimator,
+            we teleoperate the robot to interact with objects in the real world while recording vibro-acoustic signals from the fingertips.
+            We then replay the recorded motions in a calibrated digital clone and use the simulator’s contact solver to generate contact and slip labels for supervision.
+          </p>
+        </div>
+      </div>
+
+      <!-- ── Subsection: Training Strategy ── -->
+      <div style="margin-top: 2.5rem;">
+        <h3 class="subsection-heading">Training Strategy</h3>
+        <div class="subsection-divider"></div>
+        <div class="two-col-media">
+          <div class="media-container">
+            <video controls style="width: 100%;">
+              <source src="assets/pretraining_dataset.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+            <div style="padding: 0.75rem; background: #fff; text-align: left; font-size: 0.85rem; font-weight: 500; color: #555;">
+              Step 1: Pretraining on a large dataset with stationary objects, to learn general acoustic patterns.
+            </div>
+          </div>
+          <div class="media-container">
+            <video controls style="width: 100%;">
+              <source src="assets/finetuning_dataset.mp4" type="video/mp4">
+            </video>
+            <div style="padding: 0.75rem; background: #fff; text-align: left; font-size: 0.85rem; font-weight: 500; color: #555;">
+              Step 2: Fine-tuning on a small dataset with free-moving objects, to adapt to more realistic manipulation scenarios.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Subsection: Estimator Performance ── -->
+      <div style="margin-top: 3rem;">
+        <h3 class="subsection-heading">Estimator Performance</h3>
+        <div class="subsection-divider"></div>
+
+        <div class="media-container" style="margin-top: 1.5rem;">
+          <video controls style="width: 100%;">
+            <source src="assets/estimator_qualitative.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <div style="padding: 0.75rem; background: #fff; text-align: left; font-size: 0.85rem; font-weight: 500; color: #555;">
+            During a teleoprated demostration, the <strong>VibeAct</strong> estimator produces predictions of contact and slip that closely track the ground-truth labels from the digital clone.
+          </div>
+        </div>
+
+        <div class="card clean" style="margin-top: 1.5rem;">
+          <div class="card-content content">
+            <p>
+              The <strong>VibeAct</strong> tactile estimator achieves an F1 score of 0.60 for contact onset
+              and 0.91 for slip presence, and a mean absolute error (MAE) of 4.74&nbsp;mm/s for
+              slip magnitude.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="policy" class="section is-white-alt">
+    <div class="container" style="max-width: 1100px;">
+      <h2 class="section-heading">Policy Learning</h2>
+      <div class="section-divider"></div>
+
+      <div class="card clean" style="margin-top: 1.5rem;">
+        <div class="card-content content">
+          <p>
+            We train reinforcement learning policies entirely in simulation using point-cloud,
+            proprioceptive, and tactile observations. During training, the tactile channel comes from the same contact
+            solver used to generate labels for training the tactile estimator, which helps bridge the
+            sim-to-real gap. For real-world deployment, we replace the simulator-generated tactile observations with outputs from the tactile estimator 
+            while keeping the policy unchanged. This allows policies trained entirely in simulation to transfer directly to the real world.
+
+          </p>
+          <p>
+            We evaluate <strong>VibeAct</strong> across multiple contact-rich dexterous manipulation tasks,
+            including in-hand repositioning, in-hand reorientation, peg insertion, and nut rotation.
+          </p>
+        </div>
+      </div>
+
+      <!-- ── Subsection: Experiments in Simulation ── -->
+      <div style="margin-top: 2.5rem;">
+        <h3 class="subsection-heading">Experiments in Simulation</h3>
+        <div class="subsection-divider"></div>
+
+        <div id="simCarousel" class="carousel-block">
+          <div class="video-carousel">
+            <button class="carousel-arrow carousel-arrow--left" type="button" aria-label="Previous video" data-carousel-prev>
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            <div class="carousel-viewport">
+              <div class="media-container">
+                <video class="carousel-video" controls muted playsinline loop style="width: 100%;">
+                  Your browser does not support the video tag.
+                </video>
+                <div class="carousel-caption"></div>
+              </div>
+            </div>
+            <button class="carousel-arrow carousel-arrow--right" type="button" aria-label="Next video" data-carousel-next>
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+          <div class="carousel-dots"></div>
+        </div>
+      </div>
+
+      <!-- ── Subsection: Experiments in the Real World ── -->
+      <div style="margin-top: 3rem;">
+        <h3 class="subsection-heading">Experiments in the Real World</h3>
+        <div class="subsection-divider"></div>
+
+        <div id="realCarousel" class="carousel-block">
+          <div class="video-carousel">
+            <button class="carousel-arrow carousel-arrow--left" type="button" aria-label="Previous video" data-carousel-prev>
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            <div class="carousel-viewport">
+              <div class="media-container">
+                <video class="carousel-video" controls muted playsinline loop style="width: 100%;">
+                  Your browser does not support the video tag.
+                </video>
+                <div class="carousel-caption"></div>
+              </div>
+            </div>
+            <button class="carousel-arrow carousel-arrow--right" type="button" aria-label="Next video" data-carousel-next>
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+          <div class="carousel-dots"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="evaluation" class="section is-light-alt">
+    <div class="container" style="max-width: 1100px;">
+      <h2 class="section-heading">Evaluation</h2>
+      <div class="section-divider"></div>
+
+      <div class="card clean" style="margin-top: 1.5rem;">
+        <div class="card-content content">
+          <p>
+            Across both simulation and real-world experiments, <strong>VibeAct</strong> consistently
+            outperforms baselines without tactile observations. These results suggest that explicit
+            representations of contact and slip, inferred from vibrotactile sensing, provide useful
+            information for contact-rich dexterous manipulation.
+          </p>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div style="position: relative; height: 420px;">
+          <canvas id="evalChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+  (function () {
+    // Edit these lists: each entry is one task video shown in its carousel.
+    var carousels = {
+      simCarousel: [
+        { src: "assets/task_reposition1.mp4",  label: "Box Climb" },
+        { src: "assets/task_reposition2.mp4",  label: "Can Climb" },
+        { src: "assets/task_reorientation.mp4", label: "Cube Rotation" },
+        { src: "assets/task_peg.mp4",          label: "Peg Insertion" },
+        { src: "assets/task_nut.mp4",          label: "Nut Rotation" }
+      ],
+      realCarousel: [
+        { src: "assets/real_cracker.mp4", label: "Box Climb" },
+        { src: "assets/real_chips.mp4", label: "Can Climb" },
+        { src: "assets/real_nut.mp4", label: "Nut Rotation" }
+      ]
+    };
+
+    function initCarousel(block, slides) {
+      var video = block.querySelector(".carousel-video");
+      var caption = block.querySelector(".carousel-caption");
+      var dotsWrap = block.querySelector(".carousel-dots");
+      var i = 0;
+
+      function render() {
+        var s = slides[i];
+        video.src = s.src;
+        video.load();
+        video.play().catch(function () {}); // autoplay on switch (muted, so allowed)
+        caption.textContent = s.label;
+        var dots = dotsWrap.children;
+        for (var d = 0; d < dots.length; d++) {
+          dots[d].classList.toggle("is-active", d === i);
+        }
+      }
+      function go(step) {
+        i = (i + step + slides.length) % slides.length;
+        render();
+      }
+
+      block.querySelector("[data-carousel-prev]").addEventListener("click", function () { go(-1); });
+      block.querySelector("[data-carousel-next]").addEventListener("click", function () { go(1); });
+
+      slides.forEach(function (s, idx) {
+        var dot = document.createElement("button");
+        dot.className = "carousel-dot";
+        dot.type = "button";
+        dot.setAttribute("aria-label", s.label);
+        dot.addEventListener("click", function () { i = idx; render(); });
+        dotsWrap.appendChild(dot);
+      });
+
+      render();
+    }
+
+    Object.keys(carousels).forEach(function (id) {
+      var block = document.getElementById(id);
+      if (block) initCarousel(block, carousels[id]);
+    });
+  })();
+  </script>
+
+  <!-- Chart.js for evaluation bar charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script>
+  (function () {
+    if (typeof Chart === "undefined") return;
+    var OURS = "#3273dc", BASE = "#c7cdd6";
+
+    // Custom plugin: draws labeled brackets under groups of bars, plus a divider.
+    var groupBrackets = {
+      id: "groupBrackets",
+      afterDraw: function (chart, args, opts) {
+        var groups = opts && opts.groups;
+        if (!groups || !groups.length) return;
+        var ctx = chart.ctx, xs = chart.scales.x, area = chart.chartArea;
+        var half = Math.abs(xs.getPixelForValue(1) - xs.getPixelForValue(0)) / 2;
+        var yLine = area.bottom + 50;  // horizontal bracket line (pushed below tick labels)
+        var tick = 8;                  // height of the bracket end caps
+
+        ctx.save();
+
+        // faint divider between the last group and the next
+        for (var k = 0; k < groups.length - 1; k++) {
+          var boundary = (xs.getPixelForValue(groups[k].end) + xs.getPixelForValue(groups[k + 1].start)) / 2;
+          ctx.beginPath();
+          ctx.strokeStyle = "#6b7280";
+          ctx.setLineDash([8, 5]);
+          ctx.lineWidth = 2;
+          ctx.moveTo(boundary, area.top);
+          ctx.lineTo(boundary, area.bottom + 14);
+          ctx.stroke();
+        }
+        ctx.setLineDash([]);
+
+        groups.forEach(function (g) {
+          var left = xs.getPixelForValue(g.start) - half;
+          var right = xs.getPixelForValue(g.end) + half;
+          ctx.beginPath();
+          ctx.strokeStyle = "#666";
+          ctx.lineWidth = 1.5;
+          ctx.moveTo(left, yLine - tick);
+          ctx.lineTo(left, yLine);
+          ctx.lineTo(right, yLine);
+          ctx.lineTo(right, yLine - tick);
+          ctx.stroke();
+
+          ctx.fillStyle = "#1a1a2e";
+          ctx.font = '700 15px "Google Sans", sans-serif';
+          ctx.textAlign = "center";
+          ctx.textBaseline = "top";
+          ctx.fillText(g.label, (left + right) / 2, yLine + 6);
+        });
+
+        ctx.restore();
+      }
+    };
+    Chart.register(groupBrackets);
+
+    var el = document.getElementById("evalChart");
+    if (!el) return;
+    new Chart(el, {
+      type: "bar",
+      data: {
+        labels: [
+          "Box Climb", "Can Climb", "Cube Rotation", "Peg Insertion", "Nut Rotation", // simulation
+          "Box Climb", "Can Climb", "Nut Rotation"                                     // real world
+        ],
+        datasets: [
+          { label: "Baseline: PC + Prop", data: [46.7, 60, 6, 6.5, 28.5, 20, 55, 5], backgroundColor: BASE, borderRadius: 4 },
+          { label: "VibeAct: PC + Prop + Tactile",      data: [50, 76, 57, 30, 44, 60, 95, 40],    backgroundColor: OURS, borderRadius: 4 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { bottom: 72 } }, // room for the group brackets
+        plugins: {
+          legend: { position: "top" },
+          tooltip: { callbacks: { label: function (c) { return c.dataset.label + ": " + c.parsed.y + "%"; } } },
+          groupBrackets: {
+            groups: [
+              { start: 0, end: 4, label: "Simulation" },
+              { start: 5, end: 7, label: "Real World" }
+            ]
+          }
+        },
+        scales: {
+          x: {
+            ticks: { maxRotation: 0, minRotation: 0, autoSkip: false, align: "center" }
+          },
+          y: {
+            beginAtZero: true,
+            max: 100,
+            title: { display: true, text: "Success Rate (%)" },
+            ticks: { callback: function (v) { return v + "%"; } }
+          }
+        }
+      }
+    });
+  })();
+  </script>
+</body>
+</html>
